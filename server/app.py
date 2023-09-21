@@ -66,5 +66,48 @@ def most_expensive_baked_good():
     )
     return response
 
+@app.route('/baked_goods',methods = ['POST'])
+def new_baked_goods():
+    new_baked = BakedGood(
+        name = request.form.get("name"),
+        price = request.form.get("price"),
+        bakery_id = request.form.get("bakery_id")
+    )
+    db.session.add(new_baked)
+    db.session.commit()
+
+    new_baked_dict = new_baked.to_dict()
+    response = make_response(jsonify(new_baked_dict),201)
+    return response
+
+@app.route('/baked_goods/<int:id>', methods = ['PATCH'])
+def alter_baked_goods(id):
+    baked = BakedGood.query.filter(BakedGood.id == id ).first()
+    
+    if baked is None:
+        return jsonify({"error": "Bakery not found"}), 404
+    else:
+        for attr in request.form:
+            setattr(baked,attr,request.form.get(attr))
+            db.session.add(baked)
+            db.session.commit()
+            baked_dict = baked.to_dict()
+            response = make_response(jsonify(baked_dict,200))
+            return response
+
+@app.route('/baked_goods/<int:id>', methods = ['DELETE'])
+def delete_baked_goods(id):
+    baked = BakedGood.query.filter(BakedGood.id == id ).first()
+    db.session.delete(baked)
+    db.session.commit()
+    response_body = {
+        "delete succesful":True,
+        "message": "deleted"
+        }
+    response = make_response(jsonify(response_body),200)
+    return response
+
+
+
 if __name__ == '__main__':
     app.run(port=5555, debug=True)
