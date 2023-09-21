@@ -80,20 +80,19 @@ def new_baked_goods():
     response = make_response(jsonify(new_baked_dict),201)
     return response
 
-@app.route('/baked_goods/<int:id>', methods = ['PATCH'])
+@app.route('/bakeries/<int:id>', methods = ['PATCH'])
 def alter_baked_goods(id):
-    baked = BakedGood.query.filter(BakedGood.id == id ).first()
+    baked = Bakery.query.filter(Bakery.id == id ).first()
     
     if baked is None:
         return jsonify({"error": "Bakery not found"}), 404
-    else:
-        for attr in request.form:
-            setattr(baked,attr,request.form.get(attr))
-            db.session.add(baked)
-            db.session.commit()
-            baked_dict = baked.to_dict()
-            response = make_response(jsonify(baked_dict,200))
-            return response
+    new_name = request.form.get('name')
+    if new_name:
+        baked.name = new_name
+    db.session.add(baked)
+    db.session.commit()
+    return jsonify(baked.to_dict()),200
+
 
 @app.route('/baked_goods/<int:id>', methods = ['DELETE'])
 def delete_baked_goods(id):
